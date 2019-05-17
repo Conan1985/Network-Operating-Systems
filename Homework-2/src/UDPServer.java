@@ -1,10 +1,18 @@
 import java.net.*;
 import java.io.*;
 public class UDPServer{
-    public static void main(String args[]){ 
+    public static void main(String args[]){
+		if (args.length < 1) {
+			System.out.println(
+					"Incorrect inputs. Quit."
+			);
+			System.out.println(
+					"Usage:java UDPServer <server port>");
+			return;
+		}
     	DatagramSocket aSocket = null;
 		try{
-	    	aSocket = new DatagramSocket(6789);
+			aSocket = new DatagramSocket(Integer.parseInt(args[0])); // For example: 6789
 					// create socket at agreed port
 			byte[] buffer = new byte[1000];
  			while(true){
