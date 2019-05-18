@@ -1,9 +1,21 @@
 import java.net.*;
 import java.io.*;
 public class UDPClient{
-    public static void main(String args[]){
-    	// args give message contents and destination hostname
-		if (args.length < 4) {
+	public static void main(String args[]){
+		int timeoutLimit = 1000;
+		DatagramSocket aSocket = null;
+	// args give message contents and server hostname
+		if (args.length < 2) {
+			System.out.println(
+					"Incorrect inputs. Quit."
+			);
+			System.out.println("Usage:java UDPClient <hostname> <server port>");
+			return;
+		}
+		if (args.length == 2) {
+			testByUserInput(timeoutLimit, args, aSocket); // Excercise 4.4
+		}
+		if (args.length == 3) {
 			System.out.println(
 					"Incorrect inputs. Quit."
 			);
@@ -11,30 +23,105 @@ public class UDPClient{
 					"Usage:java UDPClient <hostname> <server port> <number of message to be sent> <length of messages>");
 			return;
 		}
-		DatagramSocket aSocket = null;
+		if (args.length == 4) {
+			testByAutoGeneration(timeoutLimit, args, aSocket); // Excercise 4.3
+		}
+	}
+
+	private static void testByUserInput(int timeoutLimit, String args[], DatagramSocket aSocket) {
+		try {
+			aSocket = new DatagramSocket();
+			InetAddress aHost = InetAddress.getByName(args[0]); // For example: localhost
+			int serverPort = Integer.parseInt(args[1]); // For example: 6789
+			BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+			String message;
+			byte [] m;
+			DatagramPacket request;
+			message = inFromUser.readLine();
+			if(message.length() > 0){
+				m = message.getBytes();
+				request = new DatagramPacket(m, m.length, aHost, serverPort);
+				aSocket.send(request);
+				aSocket.setSoTimeout(timeoutLimit);
+			}
+			while(aSocket.getSoTimeout() > 0){
+				// recieve data until timeout
+				try {
+					byte[] buffer = new byte[1000];
+					DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
+					aSocket.receive(reply);
+					System.out.println("Reply: " + new String(reply.getData()));
+					if(aSocket.getSoTimeout() > 0){
+						message = inFromUser.readLine();
+						if(message.length() > 0){
+							m = message.getBytes();
+							request = new DatagramPacket(m, m.length, aHost, serverPort);
+							aSocket.send(request);
+							aSocket.setSoTimeout(timeoutLimit);
+						}
+					}
+
+				}
+				catch (SocketTimeoutException e) {
+					// timeout exception.
+					System.out.println("Timeout reached!!! " + e);
+					aSocket.close();
+				}
+			}
+
+		} catch (SocketException e){System.out.println("Socket: " + e.getMessage());
+		} catch (IOException e){System.out.println("IO: " + e.getMessage());
+		} finally { if(aSocket != null) aSocket.close();}
+	}
+
+	private static void testByAutoGeneration(int timeoutLimit, String args[], DatagramSocket aSocket) {
 		try {
 			aSocket = new DatagramSocket();
 			InetAddress aHost = InetAddress.getByName(args[0]); // For example: localhost
 			int serverPort = Integer.parseInt(args[1]); // For example: 6789
 			int number = Integer.parseInt(args[2]);
 			int length = Integer.parseInt(args[3]);
-			String text = "";
-			for (int i = 0; i < length; i++) {
-				text += '*';
-			}
-			for (int i = 1; i <= number; i++) {
-				String message = "Message number " + i + text;
-				byte [] m = message.getBytes();
-				DatagramPacket request =
-						new DatagramPacket(m,  message.length(), aHost, serverPort);
+			String message;
+			byte [] m;
+			DatagramPacket request;
+			message = "*";
+			if(message.length() > 0){
+				m = message.getBytes();
+				request = new DatagramPacket(m, m.length, aHost, serverPort);
 				aSocket.send(request);
-				byte[] buffer = new byte[1000];
-				DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
-				aSocket.receive(reply);
-				System.out.println("Reply: " + new String(reply.getData()));
+				aSocket.setSoTimeout(timeoutLimit);
 			}
-		}catch (SocketException e){System.out.println("Socket: " + e.getMessage());
-		}catch (IOException e){System.out.println("IO: " + e.getMessage());
-		}finally {if(aSocket != null) aSocket.close();}
-	}		      	
+			int count = 1;
+			while(aSocket.getSoTimeout() > 0 && count <= number + 1){
+				// recieve data until timeout
+				try {
+					byte[] buffer = new byte[1000];
+					DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
+					aSocket.receive(reply);
+					System.out.println("Reply: " + new String(reply.getData()));
+					if(aSocket.getSoTimeout() > 0){
+						message = "";
+						for (int i = 0; i < length; i++) {
+							message += "*";
+						}
+						message = "Message number " + count + message;
+						if(message.length() > 0){
+							m = message.getBytes();
+							request = new DatagramPacket(m, m.length, aHost, serverPort);
+							aSocket.send(request);
+							aSocket.setSoTimeout(timeoutLimit);
+						}
+					}
+					count ++;
+				}
+				catch (SocketTimeoutException e) {
+					// timeout exception.
+					System.out.println("Timeout reached!!! " + e + " at " + count + " message");
+					aSocket.close();
+				}
+			}
+		} catch (SocketException e){System.out.println("Socket: " + e.getMessage());
+		} catch (IOException e){System.out.println("IO: " + e.getMessage());
+		} finally { if(aSocket != null) aSocket.close();}
+	}
 }
