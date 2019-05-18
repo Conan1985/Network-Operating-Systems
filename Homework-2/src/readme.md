@@ -69,7 +69,7 @@ of client from the user (Exercise 4.4) by giving different numbers of commands a
     Keep this terminal open.
 2. Open another terminal at the path of `TCPClient.class`, run the client with the same port number used by the TCP
 server and the host name. If on the same machine, host name can be "localhost".
-   Usage: `java UDPClient <hostname> <server port>`.
+   Usage: `java TCPClient <hostname> <server port>`.
    For example, run the following command:
    ```
    java TCPClient localhost 7896
