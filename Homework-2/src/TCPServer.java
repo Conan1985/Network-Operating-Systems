@@ -1,38 +1,37 @@
 import java.net.*;
 import java.io.*;
-public class TCPServer {
-	public static void main (String args[]) {
-		try{
-			int serverPort = 7896; // the server port
-			ServerSocket listenSocket = new ServerSocket(serverPort);
-			while(true) {
-				Socket clientSocket = listenSocket.accept();
-				Connection c = new Connection(clientSocket);
-			}
-		} catch(IOException e) {System.out.println("Listen socket:"+e.getMessage());}
-	}
-}
-class Connection extends Thread {
-	DataInputStream in;
-	DataOutputStream out;
-	Socket clientSocket;
-	public Connection (Socket aClientSocket) {
+// CISC 611-90-O-2019/Late Spring - Network Operating Systems Homework-2
+// Youwei Lu
+public class TCPServer{
+	public static void main(String args[]) {
+		if (args.length < 1) {
+			System.out.println(
+					"Incorrect inputs. Quit."
+			);
+			System.out.println("Usage:java UDPClient <server port>");
+			System.out.println("While reading message, use enter key to read the next message  ");
+			return;
+		}
+		Socket clientSocket = null;
 		try {
-			clientSocket = aClientSocket;
-			in = new DataInputStream( clientSocket.getInputStream());
-			out =new DataOutputStream( clientSocket.getOutputStream());
-			this.start();
-		} catch(IOException e) {System.out.println("Connection:"+e.getMessage());}
-	}
-	public void run(){
-		try {			                 // an echo server
-
-			String data = in.readUTF();	                  // read a line of data from the stream
-			out.writeUTF(data);
-		}catch (EOFException e){System.out.println("EOF:"+e.getMessage());
-		} catch(IOException e) {System.out.println("readline:"+e.getMessage());
+			int serverPort = Integer.parseInt(args[0]); // For example, 7896
+			ServerSocket listenSocket = new ServerSocket(serverPort);
+			clientSocket = listenSocket.accept();
+			DataInputStream in = new DataInputStream(clientSocket.getInputStream());
+			DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			String messageIn = "";
+			while (!messageIn.equals("quit")) {
+				messageIn = in.readUTF();
+				System.out.println("Receive messge: " + messageIn);
+				String messageOut = br.readLine();
+				out.writeUTF(messageOut);
+				out.flush();
+			}
+			in.close();
+			clientSocket.close();
+			listenSocket.close();
+		} catch(IOException e) {System.out.println("Listen socket:"+e.getMessage());
 		} finally{ try {clientSocket.close();}catch (IOException e){/*close failed*/}}
-		
-
 	}
 }

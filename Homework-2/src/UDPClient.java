@@ -1,5 +1,7 @@
 import java.net.*;
 import java.io.*;
+// CISC 611-90-O-2019/Late Spring - Network Operating Systems Homework-2
+// Youwei Lu
 public class UDPClient{
 	public static void main(String args[]){
 		int timeoutLimit = 1000;
@@ -10,6 +12,7 @@ public class UDPClient{
 					"Incorrect inputs. Quit."
 			);
 			System.out.println("Usage:java UDPClient <hostname> <server port>");
+			System.out.println("While sending message, input 'quit' to quit.");
 			return;
 		}
 		if (args.length == 2) {
@@ -20,7 +23,8 @@ public class UDPClient{
 					"Incorrect inputs. Quit."
 			);
 			System.out.println(
-					"Usage:java UDPClient <hostname> <server port> <number of message to be sent> <length of messages>");
+					"Usage:java UDPClient <hostname> <server port> <number of message to be sent> <length of messages>"
+			);
 			return;
 		}
 		if (args.length == 4) {
@@ -53,14 +57,16 @@ public class UDPClient{
 					System.out.println("Reply: " + new String(reply.getData()));
 					if(aSocket.getSoTimeout() > 0){
 						message = inFromUser.readLine();
-						if(message.length() > 0){
+						if(message.equals("quit")){
+							System.out.println("Socket Closed !!! ");
+							aSocket.close();
+						} if(message.length() > 0){
 							m = message.getBytes();
 							request = new DatagramPacket(m, m.length, aHost, serverPort);
 							aSocket.send(request);
 							aSocket.setSoTimeout(timeoutLimit);
 						}
 					}
-
 				}
 				catch (SocketTimeoutException e) {
 					// timeout exception.
