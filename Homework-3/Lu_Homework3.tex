@@ -33,9 +33,15 @@
 		\item $sc$: Send-constrained channel
 	\end{itemize}
 
+	
+	\subsubsection*{Construct a send-constrained channel from a receive-constrained channel}
+	
 	With the nomenclatures used, the problem can be rephrased as: given a $rc$, show how to construct a $s(rc)$.
 	
-	Use a $N$. when it receives a $m$, it uses the received-constrained channel $rc$ to return to the sender a signed hash $\text{sig}\{h(m,t)\}$. Then construct $s(rc)$ from $c$ and $N$. The rules for sending and receiving on $s(rc)$ are as follow:
+	Use a $N$. When it receives a $m$, it uses the receive-constrained channel $rc$ to return to the sender a signed hash $\text{sig}\{h(m,t)\}$. Then construct $s(rc)$ from $c$ and $N$. 
+	
+	Assuming the receivers' and $N$'s clocks are synchronized, so the timestamp can be treated as current within a certain bound of the receiver's time.
+	The followings are the steps on sending and receiving $m$ on  $s(rc)$:
 	
 	To send $m$ on $s(rc)$:
 	
@@ -53,12 +59,11 @@
 	
 	\hspace{0.628in} verify currency of $t$ and freshness of $h$
 	
-	\hspace{0.628in} Discard $m$ if verification fails, else receive $m$.
+	\hspace{0.628in} Discard $m$ for verification fails, otherwise receive $m$.
 	
-	It is assumed that the receivers' clocks are synchronized to $N$'s clock. The timestamp (and hence state of the sender) is deemed current if it is within a given bound of the time on the receiver's clock. To prevent replay attacks, the receiver need remember the hashes for only a limited time: older messages will have a non-current timestamp.
+	\subsubsection*{Construct a receive-constrained channel from a send-constrained channel}
 	
-	In a similar fashion, a receive-constrained channel $r(sc)$ can be implemented from a send-constrained channel $sc$. All messages are sent (over any channel) to a trusted node, which stores them. Receivers must use a particular send-constrained channel to reach that node, which responds with the next message for them.
-	
+	Using the same way, a receive-constrained channel can be implemented from a send-constrained channel. Again, the problem may be rephrased as: given a $sc$, show how to construct a $r(sc)$. Use a trusted node $N$ to receive and store all messages from any channels. Then the receivers use a send-constrained channel to reach $N$, and receive the next message from $N$.
 	
 \end{document}
 
